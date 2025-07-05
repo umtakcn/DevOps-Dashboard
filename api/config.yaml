@@ -1,0 +1,9 @@
+argocd:
+  prod:
+    api_url: "https://localhost:8080"
+    username: "admin"
+    password: "${ARGOCD_PROD_PASS}"
+  test:
+    api_url: "https://localhost:8082"
+    username: "admin"
+    password: "${ARGOCD_TEST_PASS}"
