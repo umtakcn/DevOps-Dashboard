@@ -3,7 +3,7 @@ argocd:
     api_url: "https://localhost:8080"
     username: "admin"
     password: "${ARGOCD_PROD_PASS}"
-  test:
-    api_url: "https://localhost:8082"
-    username: "admin"
-    password: "${ARGOCD_TEST_PASS}"
+tekton:
+  prod:
+    api_url: "https://172.29.36.235:8443"
+    token: "${KUBE_PROD_TOKEN}"
