@@ -1,28 +1,53 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import Login from "./Login";
 import ArgoCDDashboard from "./dashboards/ArgoCDDashboard";
 import TektonDashboard from "./dashboards/TektonDashboard";
 
-// Global API_URL değişkeni varsa kullan, yoksa eski davranış (/api/...) çalışır
 const API_URL = window.REACT_APP_API_URL ? window.REACT_APP_API_URL : "";
 
+// JWT token eklemek için yardımcı fetch fonksiyonu
+const fetchWithAuth = (url, options = {}) => {
+  const token = localStorage.getItem("jwt");
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  });
+};
+
 function App() {
+  const [token, setToken] = useState(localStorage.getItem("jwt") || null);
   const [selectedTarget, setSelectedTarget] = useState(null);
   const [targets, setTargets] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Login kontrolü
   useEffect(() => {
+    if (!token) return;
     setLoading(true);
-    fetch(`${API_URL}/api/targets`)
-      .then(res => res.json())
+    fetchWithAuth(`${API_URL}/api/targets`)
+      .then(res => {
+        if (res.status === 401) {
+          setToken(null);
+          localStorage.removeItem("jwt");
+          return [];
+        }
+        return res.json();
+      })
       .then(data => {
         setTargets(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(() => setTargets([]));
-  }, []);
+  }, [token]);
 
-  const getTargetByKey = (key) => targets.find(t => (t.type + "_" + t.key) === key);
+  if (!token) {
+    return <Login onLogin={setToken} />;
+  }
 
+  // Giriş yaptıktan sonra ortam seçimi
   if (!selectedTarget) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
@@ -40,12 +65,22 @@ function App() {
                 {target.name}
               </button>
             ))}
+            <button
+              onClick={() => {
+                setToken(null);
+                localStorage.removeItem("jwt");
+              }}
+              className="py-2 mt-2 rounded-xl text-base font-semibold bg-gray-200 text-gray-700 shadow hover:bg-gray-300 transition-all"
+            >
+              Çıkış Yap
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
+  const getTargetByKey = (key) => targets.find(t => (t.type + "_" + t.key) === key);
   const currentTarget = getTargetByKey(selectedTarget);
 
   if (currentTarget?.type === "tekton") {
@@ -55,6 +90,7 @@ function App() {
         targetName={currentTarget.name}
         onChangeTarget={() => setSelectedTarget(null)}
         API_URL={API_URL}
+        fetchWithAuth={fetchWithAuth}
       />
     );
   }
@@ -66,6 +102,7 @@ function App() {
         targetName={currentTarget.name}
         onChangeTarget={() => setSelectedTarget(null)}
         API_URL={API_URL}
+        fetchWithAuth={fetchWithAuth}
       />
     );
   }

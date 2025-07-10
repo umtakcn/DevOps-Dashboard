@@ -1,3 +1,13 @@
+frontend:
+  allowed_origins:
+    - "http://localhost:5173"
+    - "http://127.0.0.1:5173"
+ldap:
+  url: "ldaps://localhost:636"
+  base_dn: "ou=abc,ou=def,dc=example,dc=org"
+  ca_cert_path: "C:/Users/umtakt/Desktop/openldap.crt"
+  binduser: "cn=ldapreader,dc=example,dc=org"
+  binduser_password_env: "LDAP_BINDUSER_PASSWORD"
 argocd:
   prod:
     api_url: "https://localhost:8080"

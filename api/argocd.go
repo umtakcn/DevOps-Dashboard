@@ -24,10 +24,10 @@ type AppSummary struct {
 	Project             string `json:"project"`
 }
 
-func RegisterArgoCDEndpoints(r *gin.Engine) {
-	r.GET("/api/apps", handleApps)
-	r.POST("/api/restart", handleRestart)
-	r.POST("/api/sync", handleSync)
+func RegisterArgoCDEndpoints(r *gin.RouterGroup) {
+	r.GET("/apps", handleApps)
+	r.POST("/restart", handleRestart)
+	r.POST("/sync", handleSync)
 }
 
 func handleApps(c *gin.Context) {

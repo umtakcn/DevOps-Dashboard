@@ -222,7 +222,7 @@ function TaskRunModal({ open, run, taskRuns, loading, onClose }) {
 }
 
 // --- MAIN DASHBOARD ---
-function TektonDashboard({ targetKey, targetName, onChangeTarget }) {
+function TektonDashboard({ targetKey, targetName, onChangeTarget, API_URL, fetchWithAuth }) {
   const tektonNamespace = "tekton";
   const [tektonRuns, setTektonRuns] = useState([]);
   const [tektonLoading, setTektonLoading] = useState(true);
@@ -239,8 +239,13 @@ function TektonDashboard({ targetKey, targetName, onChangeTarget }) {
   const fetchTektonRuns = () => {
     setTektonLoading(true);
     setTektonError("");
-    fetch(`${API_URL}/api/tekton/pipelineruns?namespace=${tektonNamespace}&target=${targetKey}`)
+    fetchWithAuth(`${API_URL}/api/tekton/pipelineruns?namespace=${tektonNamespace}&target=${targetKey}`)
       .then((res) => {
+        if (res.status === 401) {
+          localStorage.removeItem("jwt");
+          window.location.reload();
+          return { items: [] };
+        }
         if (!res.ok) throw new Error("Tekton API hatası");
         return res.json();
       })
@@ -295,7 +300,7 @@ function TektonDashboard({ targetKey, targetName, onChangeTarget }) {
     setDetailRun(run);
     setTaskRuns([]);
     setTaskLoading(true);
-    fetch(`${API_URL}/api/tekton/taskruns?namespace=${tektonNamespace}&pipelineRunName=${run.metadata.name}&target=${targetKey}`)
+    fetchWithAuth(`${API_URL}/api/tekton/taskruns?namespace=${tektonNamespace}&pipelineRunName=${run.metadata.name}&target=${targetKey}`)
       .then(res => res.json())
       .then(data => {
         setTaskRuns(data.items || []);

@@ -7,7 +7,7 @@ import Toast from "../components/Toast";
 // window.REACT_APP_API_URL varsa kullan, yoksa ""
 const API_URL = window.REACT_APP_API_URL ? window.REACT_APP_API_URL : "";
 
-function ArgoCDDashboard({ targetKey, targetName, onChangeTarget }) {
+function ArgoCDDashboard({ targetKey, targetName, onChangeTarget, API_URL, fetchWithAuth }) {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -31,8 +31,13 @@ function ArgoCDDashboard({ targetKey, targetName, onChangeTarget }) {
 
   const fetchApps = () => {
     setLoading(true);
-    fetch(`${API_URL}/api/apps?target=${targetKey}`)
+    fetchWithAuth(`${API_URL}/api/apps?target=${targetKey}`)
       .then((res) => {
+        if (res.status === 401) {
+          localStorage.removeItem("jwt");
+          window.location.reload();
+          return [];
+        }
         if (!res.ok) throw new Error("API hatası");
         return res.json();
       })
@@ -107,7 +112,7 @@ function ArgoCDDashboard({ targetKey, targetName, onChangeTarget }) {
     setConfirmOpen(false);
     if (confirmData.action === "restart") {
       const app = confirmData.app;
-      fetch(`${API_URL}/api/restart`, {
+      fetchWithAuth(`${API_URL}/api/restart`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -128,7 +133,7 @@ function ArgoCDDashboard({ targetKey, targetName, onChangeTarget }) {
         .catch(() => showToast("error", "Bağlantı hatası!"));
     } else if (confirmData.action === "sync") {
       const app = confirmData.app;
-      fetch(`${API_URL}/api/sync`, {
+      fetchWithAuth(`${API_URL}/api/sync`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

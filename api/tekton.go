@@ -9,10 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterTektonEndpoints(r *gin.Engine) {
-	r.GET("/api/tekton/pipelineruns", handleTektonPipelineRuns)
-	r.GET("/api/tekton/pipelineruns/:name", handleTektonPipelineRunDetail)
-	r.GET("/api/tekton/taskruns", handleTektonTaskRuns)
+func RegisterTektonEndpoints(r *gin.RouterGroup) {
+	r.GET("/tekton/pipelineruns", handleTektonPipelineRuns)
+	r.GET("/tekton/pipelineruns/:name", handleTektonPipelineRunDetail)
+	r.GET("/tekton/taskruns", handleTektonTaskRuns)
 }
 
 func getTektonTarget(c *gin.Context) TektonTarget {
